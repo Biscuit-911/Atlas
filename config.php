@@ -4,6 +4,8 @@
  * Update these values according to your server setup
  */
 
+define('ROOT_PATH', dirname(__DIR__));
+
 // Database Configuration (if using database)
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'india_tech_atlas');
@@ -61,7 +63,7 @@ define('CACHE_LIFETIME', 3600); // 1 hour
 
 // Logging
 define('LOG_ENABLED', true);
-define('LOG_FILE', __DIR__ . '/logs/app.log');
+define('LOG_FILE', ROOT_PATH . '/logs/app.log');
 define('LOG_LEVEL', 'INFO'); // DEBUG, INFO, WARNING, ERROR
 
 // Helper function to get database connection

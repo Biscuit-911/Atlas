@@ -4,9 +4,11 @@
  * Generates RSS feed for India Tech Atlas
  */
 
+require_once __DIR__ . '/config.php';
+
 header('Content-Type: application/rss+xml; charset=utf-8');
 
-$baseUrl = 'https://yourdomain.com'; // Update with your domain
+$baseUrl = APP_URL; // domain from config.php
 $lastBuildDate = date('r');
 
 $items = [
@@ -45,8 +47,8 @@ $items = [
     <description>Explore India's tech ecosystem across past, present, and future eras with interactive games and insights.</description>
     <language>en-IN</language>
     <lastBuildDate><?php echo $lastBuildDate; ?></lastBuildDate>
-    <atom:link href="<?php echo htmlspecialchars($baseUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>/rss.php" rel="self" type="application/rss+xml"/>
-    
+    <atom:link href="<?php echo htmlspecialchars($baseUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>/server/rss.php" rel="self" type="application/rss+xml"/>
+
     <?php foreach ($items as $item): ?>
     <item>
       <title><?php echo htmlspecialchars($item['title']); ?></title>
@@ -56,7 +58,7 @@ $items = [
       <guid><?php echo htmlspecialchars($item['link']); ?></guid>
     </item>
     <?php endforeach; ?>
-    
+
   </channel>
 </rss>
 

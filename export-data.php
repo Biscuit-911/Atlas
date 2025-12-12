@@ -4,7 +4,7 @@
  * Exports logbook entries and quiz scores to CSV/JSON
  */
 
-require_once 'config.php';
+require_once __DIR__ . '/config.php';
 
 // Default response type is JSON
 header('Content-Type: application/json; charset=utf-8');

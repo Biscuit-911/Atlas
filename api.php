@@ -4,7 +4,7 @@
  * Provides RESTful API for future backend functionality
  */
 
-require_once 'config.php';
+require_once __DIR__ . '/config.php';
 
 // Set CORS headers
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -37,19 +37,19 @@ switch ($endpoint) {
     case 'quiz':
         handleQuizEndpoint($method, $pathParts, $input, $queryParams);
         break;
-    
+
     case 'entries':
         handleEntriesEndpoint($method, $pathParts, $input, $queryParams);
         break;
-    
+
     case 'stats':
         handleStatsEndpoint($method, $pathParts, $input, $queryParams);
         break;
-    
+
     case 'health':
         handleHealthEndpoint();
         break;
-    
+
     default:
         errorResponse('Endpoint not found', 404);
 }
@@ -69,7 +69,7 @@ function handleQuizEndpoint($method, $pathParts, $input, $queryParams) {
                 errorResponse('Invalid quiz endpoint', 400);
             }
             break;
-        
+
         case 'POST':
             if (count($pathParts) > 1 && $pathParts[1] === 'score') {
                 // Submit quiz score
@@ -79,7 +79,7 @@ function handleQuizEndpoint($method, $pathParts, $input, $queryParams) {
                 errorResponse('Invalid quiz endpoint', 400);
             }
             break;
-        
+
         default:
             errorResponse('Method not allowed', 405);
     }
@@ -90,7 +90,7 @@ function handleQuizEndpoint($method, $pathParts, $input, $queryParams) {
  */
 function handleEntriesEndpoint($method, $pathParts, $input, $queryParams) {
     // Note: In production, add authentication here
-    
+
     switch ($method) {
         case 'GET':
             if (count($pathParts) > 1) {
@@ -106,7 +106,7 @@ function handleEntriesEndpoint($method, $pathParts, $input, $queryParams) {
                 successResponse($entries, 'Entries retrieved');
             }
             break;
-        
+
         case 'POST':
             $entry = createEntry($input);
             if ($entry) {
@@ -115,7 +115,7 @@ function handleEntriesEndpoint($method, $pathParts, $input, $queryParams) {
                 errorResponse('Failed to create entry', 500);
             }
             break;
-        
+
         case 'PUT':
             if (count($pathParts) > 1) {
                 $id = $pathParts[1];
@@ -129,7 +129,7 @@ function handleEntriesEndpoint($method, $pathParts, $input, $queryParams) {
                 errorResponse('Entry ID required', 400);
             }
             break;
-        
+
         case 'DELETE':
             if (count($pathParts) > 1) {
                 $id = $pathParts[1];
@@ -142,7 +142,7 @@ function handleEntriesEndpoint($method, $pathParts, $input, $queryParams) {
                 errorResponse('Entry ID required', 400);
             }
             break;
-        
+
         default:
             errorResponse('Method not allowed', 405);
     }
@@ -155,7 +155,7 @@ function handleStatsEndpoint($method, $pathParts, $input, $queryParams) {
     if ($method !== 'GET') {
         errorResponse('Method not allowed', 405);
     }
-    
+
     $stats = getStats($queryParams);
     successResponse($stats, 'Statistics retrieved');
 }
@@ -166,7 +166,7 @@ function handleStatsEndpoint($method, $pathParts, $input, $queryParams) {
 function handleHealthEndpoint() {
     $db = getDBConnection();
     $dbStatus = $db ? 'connected' : 'disconnected';
-    
+
     jsonResponse([
         'status' => 'ok',
         'timestamp' => date('c'),
@@ -181,7 +181,7 @@ function getQuizQuestions($category = 'all') {
     $db = getDBConnection();
     if (!$db) {
         // Fallback to JSON file
-        $json = @file_get_contents('quiz-questions.json');
+        $json = @file_get_contents(ROOT_PATH . '/quiz-questions.json');
         if ($json === false) {
             return [];
         }
@@ -197,7 +197,7 @@ function getQuizQuestions($category = 'all') {
         }
         return $data[$category] ?? [];
     }
-    
+
     $stmt = $db->prepare("SELECT * FROM quiz_questions WHERE category = ? OR ? = 'all' ORDER BY RAND()");
     $stmt->execute([$category, $category]);
     return $stmt->fetchAll();
@@ -206,7 +206,7 @@ function getQuizQuestions($category = 'all') {
 function saveQuizScore($data) {
     $db = getDBConnection();
     if (!$db) return null;
-    
+
     $stmt = $db->prepare("INSERT INTO quiz_scores (player_name, score, level, time_taken, created_at) VALUES (?, ?, ?, ?, NOW())");
     $stmt->execute([
         $data['player_name'] ?? 'Anonymous',
@@ -214,7 +214,7 @@ function saveQuizScore($data) {
         $data['level'] ?? 1,
         $data['time_taken'] ?? 0
     ]);
-    
+
     return ['id' => $db->lastInsertId()];
 }
 
@@ -236,7 +236,7 @@ function getEntries($params = []) {
 function getEntry($id) {
     $db = getDBConnection();
     if (!$db) return null;
-    
+
     $stmt = $db->prepare("SELECT * FROM logbook_entries WHERE id = ?");
     $stmt->execute([$id]);
     return $stmt->fetch();
@@ -276,7 +276,7 @@ function updateEntry($id, $data) {
 function deleteEntry($id) {
     $db = getDBConnection();
     if (!$db) return false;
-    
+
     $stmt = $db->prepare("DELETE FROM logbook_entries WHERE id = ?");
     return $stmt->execute([$id]);
 }
@@ -290,21 +290,21 @@ function getStats($params = []) {
             'average_score' => 0
         ];
     }
-    
+
     $stats = [];
-    
+
     // Total entries
     $stmt = $db->query("SELECT COUNT(*) as count FROM logbook_entries");
     $stats['total_entries'] = $stmt->fetch()['count'];
-    
+
     // Total quiz plays
     $stmt = $db->query("SELECT COUNT(*) as count FROM quiz_scores");
     $stats['total_quiz_plays'] = $stmt->fetch()['count'];
-    
+
     // Average score
     $stmt = $db->query("SELECT AVG(score) as avg FROM quiz_scores");
     $stats['average_score'] = round($stmt->fetch()['avg'] ?? 0, 2);
-    
+
     return $stats;
 }
 

@@ -4,7 +4,7 @@
  * Creates a backup of the database
  */
 
-require_once 'config.php';
+require_once __DIR__ . '/config.php';
 
 // Check authentication
 $authorized = true; // Replace with actual auth check
@@ -13,7 +13,7 @@ if (!$authorized) {
     die('Unauthorized');
 }
 
-$backupDir = 'backups';
+$backupDir = __DIR__ . DIRECTORY_SEPARATOR . 'backups';
 $backupFile = $backupDir . DIRECTORY_SEPARATOR . 'backup-' . date('Y-m-d-H-i-s') . '.sql';
 
 // Create backups directory if it doesn't exist

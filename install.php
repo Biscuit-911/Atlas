@@ -4,10 +4,12 @@
  * Run this once to set up the database
  */
 
-require_once 'config.php';
+require_once __DIR__ . '/config.php';
+
+$rootPath = dirname(__DIR__);
 
 // Check if already installed
-$installed = file_exists('.installed');
+$installed = file_exists($rootPath . '/.installed');
 
 if ($installed && !isset($_GET['force'])) {
     die('Application is already installed. Add ?force=1 to reinstall.');
@@ -52,31 +54,31 @@ if ($installed && !isset($_GET['force'])) {
 </head>
 <body>
     <h1>India Tech Atlas - Installation</h1>
-    
+
     <?php
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install'])) {
         $db = getDBConnection();
-        
+
         if (!$db) {
             echo '<div class="step error">Database connection failed. Please check config.php</div>';
         } else {
             echo '<div class="step success">Database connected successfully!</div>';
-            
+
             // Read and execute SQL file
-            if (!file_exists('database.sql')) {
-                echo '<div class="step error">database.sql not found in this directory.</div>';
+            if (!file_exists($rootPath . '/database.sql')) {
+                echo '<div class="step error">database.sql not found in project root.</div>';
             } else {
-                $sql = file_get_contents('database.sql');
+                $sql = file_get_contents($rootPath . '/database.sql');
                 $statements = array_filter(array_map('trim', explode(';', $sql)));
-            
+
             $success = 0;
             $errors = 0;
-            
+
                 foreach ($statements as $statement) {
                 if (empty($statement) || strpos($statement, '--') === 0) {
                     continue;
                 }
-                
+
                 try {
                     $db->exec($statement);
                     $success++;
@@ -88,16 +90,16 @@ if ($installed && !isset($_GET['force'])) {
                 }
                 }
             }
-            
+
             if ($errors === 0) {
-                file_put_contents('.installed', date('Y-m-d H:i:s'));
+                file_put_contents($rootPath . '/.installed', date('Y-m-d H:i:s'));
                 echo '<div class="step success">Installation completed successfully!</div>';
                 echo '<div class="step">You can now <a href="index.html" style="color: #4dd0e1;">access the application</a>.</div>';
             }
         }
     } else {
     ?>
-    
+
     <div class="step">
         <h2>Pre-Installation Checklist</h2>
         <ul>
@@ -107,7 +109,7 @@ if ($installed && !isset($_GET['force'])) {
             <li>✓ Write permissions on this directory</li>
         </ul>
     </div>
-    
+
     <div class="step">
         <h2>Installation Steps</h2>
         <p>This will:</p>
@@ -118,11 +120,11 @@ if ($installed && !isset($_GET['force'])) {
             <li>Set up views and stored procedures</li>
         </ul>
     </div>
-    
+
     <form method="POST">
         <button type="submit" name="install">Start Installation</button>
     </form>
-    
+
     <?php } ?>
 </body>
 </html>
